@@ -5,6 +5,7 @@ e "testes passaram" exige que o runner tenha executado >= 1 teste.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import shlex
@@ -27,6 +28,48 @@ class Check:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+
+def check_integrity(ws: Path) -> Check:
+    """Verifica anomalias de integridade geradas por LLMs: duplicatas espúrias e arquivos trocados."""
+    skip = {".git", ".venv", "__pycache__"}
+    files = [p for p in ws.rglob("*") if p.is_file() and not (skip & set(p.parts))]
+
+    # 1) Arquivos não vazios com conteúdo idêntico (ex.: requirements.txt copiado de app.py)
+    seen_hashes: dict[str, Path] = {}
+    dups: list[str] = []
+    for f in sorted(files):
+        try:
+            content = f.read_bytes()
+        except OSError as e:
+            return Check("integrity", "fail", f"erro lendo {f.relative_to(ws)}: {e}")
+        if not content.strip():
+            continue  # arquivos vazios como __init__.py ou requirements.txt sem dependencias sao validos
+        h = hashlib.sha256(content).hexdigest()
+        if h in seen_hashes:
+            dups.append(f"{f.relative_to(ws)} e {seen_hashes[h].relative_to(ws)} possuem conteudo identico")
+        else:
+            seen_hashes[h] = f
+
+    if dups:
+        return Check("integrity", "fail", "arquivos duplicados detectados:\n" + "\n".join(dups))
+
+    # 2) requirements.txt nao pode conter codigo Python
+    req = ws / "requirements.txt"
+    if req.is_file():
+        lines = [line.strip() for line in req.read_text(encoding="utf-8", errors="replace").splitlines()]
+        for l in lines:
+            if l.startswith(("def ", "class ", "import ", "from ", "return ")) or re.match(r"^[a-zA-Z_]\w*\s*\(", l):
+                return Check("integrity", "fail", "requirements.txt contem codigo Python em vez de dependencias pip")
+
+    # 3) README.md nao deve ser script de teste puro
+    readme = ws / "README.md"
+    if readme.is_file():
+        first_lines = [l.strip() for l in readme.read_text(encoding="utf-8", errors="replace").splitlines() if l.strip()][:5]
+        if any(l.startswith(("import unittest", "from ", "def test_")) for l in first_lines):
+            return Check("integrity", "fail", "README.md contem script de teste em vez de documentacao Markdown")
+
+    return Check("integrity", "pass", f"{len(files)} arquivo(s) verificados sem anomalias")
 
 
 def venv_python(ws: Path) -> Path | None:
@@ -69,6 +112,13 @@ def _py_files(ws: Path) -> list[Path]:
 
 def run_checks(ws: Path, arch: dict, install: bool = True) -> list[Check]:
     checks: list[Check] = []
+
+    # 0) integridade basica dos artefatos
+    c_int = check_integrity(ws)
+    checks.append(c_int)
+    if c_int.status == "fail":
+        return checks
+
     pys = _py_files(ws)
 
     # 1) sintaxe (compile em processo, sem executar o codigo)

@@ -217,7 +217,8 @@ class TestQuality(Base):
     def test_syntax_error_detected_without_executing(self):
         ws = self._ws({"a.py": "def (:\n"})
         checks = quality.run_checks(ws, {"commands": {"test": "python -V"}}, install=False)
-        self.assertEqual(checks[0].status, "fail")
+        s = [c for c in checks if c.name == "syntax"][0]
+        self.assertEqual(s.status, "fail")
 
 
 class _Fake(BaseHTTPRequestHandler):
