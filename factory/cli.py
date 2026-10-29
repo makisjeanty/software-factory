@@ -99,8 +99,22 @@ def main(argv: list[str] | None = None) -> int:
     st = sub.add_parser("status")
     st.add_argument("run_id", nargs="?")
     sub.add_parser("spec", help="valida e lista fundamentos e regras universais")
+    wb = sub.add_parser("web", help="inicia servidor da interface web visual")
+    wb.add_argument("--host", default="127.0.0.1")
+    wb.add_argument("--port", type=int, default=8080)
     args = ap.parse_args(argv)
     runs = Path(args.home) / "runs"
+
+    if args.cmd == "web":
+        from . import web
+        server = web.run_server(args.host, args.port, args.home)
+        print(f"Interface Web da Software Factory ativa em: http://{args.host}:{args.port}")
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print("\nEncerrando servidor web.")
+            server.server_close()
+        return 0
 
     if args.cmd == "spec":
         try:

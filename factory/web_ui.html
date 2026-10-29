@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Software Factory Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-surface: #111726;
+      --bg-surface-elevated: #182238;
+      --bg-glass: rgba(17, 23, 38, 0.75);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(99, 102, 241, 0.3);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      --accent: #06b6d4;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --info: #38bdf8;
+      --info-bg: rgba(56, 189, 248, 0.12);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-base); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-surface-elevated); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    /* Header */
+    header {
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      background: var(--primary-gradient);
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow-glow);
+    }
+    .brand-icon svg { width: 22px; height: 22px; fill: white; }
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-text span {
+      font-size: 0.75rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid transparent;
+      outline: none;
+    }
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+      border-color: var(--border-subtle);
+    }
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+    .btn-success {
+      background: var(--success);
+      color: #064e3b;
+    }
+    .btn-success:hover { filter: brightness(1.1); }
+
+    /* Metrics Bar */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      padding: 1.5rem 2rem 0.5rem 2rem;
+    }
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .metric-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-2px);
+    }
+    .metric-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    .metric-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Main Container */
+    .app-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
+      padding: 1rem 2rem 2rem 2rem;
+      max-width: 1800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Left Sidebar: Runs List */
+    .runs-sidebar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: calc(100vh - 220px);
+    }
+    .sidebar-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sidebar-header h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .runs-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .run-item {
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-md);
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .run-item:hover {
+      background: var(--bg-surface-elevated);
+      border-color: var(--border-subtle);
+    }
+    .run-item.active {
+      background: var(--bg-surface-elevated);
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+    }
+    .run-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .run-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .run-idea {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-main);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.35;
+    }
+    .run-item-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .badge-delivered { background: var(--success-bg); color: var(--success); }
+    .badge-delivered::before { background: var(--success); }
+    .badge-running { background: var(--info-bg); color: var(--info); }
+    .badge-running::before { background: var(--info); animation: pulse 1.5s infinite; }
+    .badge-awaiting_approval { background: var(--warning-bg); color: var(--warning); }
+    .badge-awaiting_approval::before { background: var(--warning); animation: pulse 1.5s infinite; }
+    .badge-blocked, .badge-rejected, .badge-error { background: var(--danger-bg); color: var(--danger); }
+    .badge-blocked::before, .badge-rejected::before, .badge-error::before { background: var(--danger); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+
+    /* Right Main Panel */
+    .details-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: calc(100vh - 220px);
+    }
+    .details-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-glass);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .details-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .details-idea {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+    .details-meta-row {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .details-meta-row span strong { color: var(--text-main); }
+
+    /* Pipeline Stepper */
+    .pipeline-stepper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 0 0 0;
+      overflow-x: auto;
+    }
+    .step-node {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .step-node.done {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+    .step-node.current {
+      background: var(--info-bg);
+      color: var(--info);
+      border-color: rgba(56, 189, 248, 0.3);
+      font-weight: 600;
+    }
+    .step-arrow {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+    }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.5rem 1.5rem 0 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 0.65rem 1rem;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text-main); }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Tab Content Area */
+    .tab-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Code & Structured View */
+    .code-block {
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .item-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .item-card h4 { font-size: 0.9rem; color: var(--text-main); }
+    .item-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+
+    /* Gate Approval Alert */
+    .gate-alert {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 70, 239, 0.15) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .gate-alert-text h3 { font-size: 0.95rem; color: #fbbf24; margin-bottom: 0.25rem; }
+    .gate-alert-text p { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      place-items: center;
+      padding: 1.5rem;
+    }
+    .modal-backdrop.open { display: grid; }
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 580px;
+      padding: 1.75rem;
+      box-shadow: var(--shadow-soft), var(--shadow-glow);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlide {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .form-control {
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus { border-color: var(--primary); }
+    textarea.form-control { resize: vertical; min-height: 100px; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-dim);
+      gap: 0.75rem;
+      text-align: center;
+      padding: 2rem;
+    }
+    .empty-state svg { width: 48px; height: 48px; stroke: var(--text-dim); }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border-subtle);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+    .data-table td {
+      padding: 0.75rem 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }
+    .data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>Software Factory</h1>
+        <span>Autonomous Pipeline</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" id="btn-refresh" onclick="loadRuns()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Atualizar
+      </button>
+      <button class="btn btn-primary" onclick="openNewModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Nova Ideia
+      </button>
+    </div>
+  </header>
+
+  <!-- Metrics Bar -->
+  <div class="metrics-bar">
+    <div class="metric-card">
+      <span class="metric-title">Total de Projetos</span>
+      <span class="metric-value" id="metric-total">0</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title">Entregues com Sucesso</span>
+      <span class="metric-value" style="color: var(--success);" id="metric-delivered">0</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title">Em Execução</span>
+      <span class="metric-value" style="color: var(--info);" id="metric-running">0</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-title">Aguardando / Bloqueados</span>
+      <span class="metric-value" style="color: var(--warning);" id="metric-attention">0</span>
+    </div>
+  </div>
+
+  <!-- Main Body Grid -->
+  <div class="app-body">
+    <!-- Left: Runs List -->
+    <aside class="runs-sidebar">
+      <div class="sidebar-header">
+        <h2>Histórico de Execuções</h2>
+        <span id="runs-count" class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-dim);">0 runs</span>
+      </div>
+      <div class="runs-list" id="runs-container">
+        <!-- Rendered via JS -->
+      </div>
+    </aside>
+
+    <!-- Right: Detailed View -->
+    <main class="details-panel" id="details-panel">
+      <div class="empty-state" id="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        <p>Selecione uma execução na lista lateral para inspecionar os artefatos e a esteira.</p>
+      </div>
+
+      <!-- Active Content (hidden until selected) -->
+      <div id="active-run-view" style="display: none; height: 100%; display: flex; flex-direction: column;">
+        <div class="details-header">
+          <div class="details-title-row">
+            <h2 class="details-idea" id="view-idea">...</h2>
+            <div id="view-badge"></div>
+          </div>
+          <div class="details-meta-row">
+            <span>ID: <strong id="view-id" style="font-family: monospace;">-</strong></span>
+            <span>LLM: <strong id="view-llm">-</strong></span>
+            <span>Status: <strong id="view-status">-</strong></span>
+          </div>
+
+          <!-- Pipeline Stages Visualizer -->
+          <div class="pipeline-stepper" id="pipeline-stepper">
+            <div class="step-node" id="step-analysis">1. Análise</div>
+            <span class="step-arrow">→</span>
+            <div class="step-node" id="step-architecture">2. Arquitetura</div>
+            <span class="step-arrow">→</span>
+            <div class="step-node" id="step-implementation">3. Implementação</div>
+            <span class="step-arrow">→</span>
+            <div class="step-node" id="step-quality">4. Qualidade</div>
+            <span class="step-arrow">→</span>
+            <div class="step-node" id="step-delivery">5. Entrega</div>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs-nav">
+          <button class="tab-btn active" onclick="switchTab('tab-overview', this)">Visão Geral & Logs</button>
+          <button class="tab-btn" onclick="switchTab('tab-analysis', this)">Análise (Spec)</button>
+          <button class="tab-btn" onclick="switchTab('tab-arch', this)">Arquitetura</button>
+          <button class="tab-btn" onclick="switchTab('tab-quality', this)">Qualidade & QA</button>
+          <button class="tab-btn" onclick="switchTab('tab-files', this)">Arquivos Gerados</button>
+          <button class="tab-btn" onclick="switchTab('tab-delivery', this)">Relatório de Entrega</button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="tab-content">
+          <!-- Overview Tab -->
+          <div class="tab-pane active" id="tab-overview">
+            <div id="gate-alert-box"></div>
+            <h3 style="font-size: 0.95rem; margin-bottom: 0.85rem; color: var(--text-muted);">Diário de Bordo da Execução</h3>
+            <div class="code-block" id="log-view">(sem logs registrados)</div>
+          </div>
+
+          <!-- Analysis Tab -->
+          <div class="tab-pane" id="tab-analysis">
+            <div id="analysis-summary" style="margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.5; color: var(--text-main);"></div>
+            <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-dim); text-transform: uppercase;">Requisitos & Critérios</h4>
+            <div id="analysis-requirements" class="card-grid"></div>
+            <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-dim); text-transform: uppercase;">Critérios de Aceite</h4>
+            <ul id="analysis-acceptance" style="margin-bottom: 1.5rem; padding-left: 1.25rem; font-size: 0.85rem; color: var(--text-muted); line-height: 1.6;"></ul>
+            <div class="code-block" id="analysis-json-raw"></div>
+          </div>
+
+          <!-- Architecture Tab -->
+          <div class="tab-pane" id="tab-arch">
+            <div class="card-grid">
+              <div class="item-card">
+                <h4>Stack Tecnológica</h4>
+                <div id="arch-stack" style="font-size: 0.85rem; color: var(--accent);"></div>
+              </div>
+              <div class="item-card">
+                <h4>Comando de Teste</h4>
+                <div id="arch-test-cmd" style="font-family: monospace; font-size: 0.8rem; color: var(--text-main);"></div>
+              </div>
+            </div>
+            <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-dim); text-transform: uppercase;">Plano de Arquivos Planejado</h4>
+            <table class="data-table">
+              <thead><tr><th>Caminho</th><th>Propósito</th></tr></thead>
+              <tbody id="arch-files-table"></tbody>
+            </table>
+          </div>
+
+          <!-- Quality Tab -->
+          <div class="tab-pane" id="tab-quality">
+            <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-dim); text-transform: uppercase;">Verificações Executadas</h4>
+            <table class="data-table">
+              <thead><tr><th>Check</th><th>Status</th><th>Detalhe</th></tr></thead>
+              <tbody id="quality-checks-table"></tbody>
+            </table>
+            <div style="margin-top: 1.5rem;">
+              <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-dim); text-transform: uppercase;">JSON de Qualidade</h4>
+              <div class="code-block" id="quality-json-raw"></div>
+            </div>
+          </div>
+
+          <!-- Files Tab -->
+          <div class="tab-pane" id="tab-files">
+            <div style="display: grid; grid-template-columns: 240px 1fr; gap: 1rem; min-height: 400px;">
+              <div style="border-right: 1px solid var(--border-subtle); padding-right: 0.5rem;">
+                <h4 style="font-size: 0.8rem; margin-bottom: 0.5rem; color: var(--text-dim); text-transform: uppercase;">Arquivos</h4>
+                <div id="files-list" style="display: flex; flex-direction: column; gap: 0.25rem;"></div>
+              </div>
+              <div>
+                <h4 id="file-viewer-title" style="font-size: 0.8rem; margin-bottom: 0.5rem; color: var(--text-dim); font-family: monospace;">(selecione um arquivo)</h4>
+                <div class="code-block" id="file-content-viewer">// selecione um arquivo ao lado para ver o código</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery Report Tab -->
+          <div class="tab-pane" id="tab-delivery">
+            <div class="code-block" id="delivery-report-view">Carregando relatório de entrega...</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- New Run Modal -->
+  <div class="modal-backdrop" id="new-run-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Criar Nova Aplicação</h3>
+        <button class="btn btn-ghost" style="padding: 0.3rem 0.6rem;" onclick="closeNewModal()">✕</button>
+      </div>
+      <form onsubmit="submitNewRun(event)">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="input-idea">Descreva sua ideia em linguagem natural:</label>
+          <textarea id="input-idea" class="form-control" placeholder="Ex.: api Python em fastapi para autenticacao jwt com sqlite e testes unitarios" required></textarea>
+        </div>
+        <div class="form-row" style="margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label for="select-mode">Modo de Aprovação:</label>
+            <select id="select-mode" class="form-control">
+              <option value="auto">Automático (--auto-approve)</option>
+              <option value="manual">Com Gates Humanos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="select-install">Dependências:</label>
+            <select id="select-install" class="form-control">
+              <option value="no-install">Sem pip install (--no-install)</option>
+              <option value="install">Instalar requirements.txt em venv</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-ghost" onclick="closeNewModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-run">Iniciar Fábrica</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentRuns = [];
+    let selectedRunId = null;
+    let selectedRunData = null;
+
+    async function loadRuns() {
+      try {
+        const res = await fetch('/api/runs');
+        if (!res.ok) return;
+        currentRuns = await res.json();
+        renderMetrics();
+        renderRunsList();
+        if (selectedRunId) {
+          loadRunDetails(selectedRunId, false);
+        } else if (currentRuns.length > 0) {
+          loadRunDetails(currentRuns[0].id);
+        }
+      } catch (err) {
+        console.error('Erro carregando runs:', err);
+      }
+    }
+
+    function renderMetrics() {
+      document.getElementById('metric-total').innerText = currentRuns.length;
+      document.getElementById('metric-delivered').innerText = currentRuns.filter(r => r.status === 'delivered').length;
+      document.getElementById('metric-running').innerText = currentRuns.filter(r => r.status === 'running').length;
+      document.getElementById('metric-attention').innerText = currentRuns.filter(r => ['awaiting_approval', 'blocked', 'rejected', 'error'].includes(r.status)).length;
+      document.getElementById('runs-count').innerText = `${currentRuns.length} runs`;
+    }
+
+    function renderRunsList() {
+      const container = document.getElementById('runs-container');
+      container.innerHTML = '';
+      currentRuns.forEach(run => {
+        const item = document.createElement('div');
+        item.className = `run-item ${selectedRunId === run.id ? 'active' : ''}`;
+        item.onclick = () => loadRunDetails(run.id);
+
+        const badgeClass = `badge-${run.status || 'running'}`;
+        item.innerHTML = `
+          <div class="run-item-top">
+            <span class="run-id">${escapeHtml(run.id.slice(0, 20))}</span>
+            <span class="badge ${badgeClass}">${escapeHtml(run.status)}</span>
+          </div>
+          <div class="run-idea">${escapeHtml(run.idea || '(sem descrição)')}</div>
+          <div class="run-item-meta">
+            <span>${escapeHtml(run.llm || 'mock')}</span>
+            <span>•</span>
+            <span>${run.done ? run.done.length : 0}/5 etapas</span>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    async function loadRunDetails(id, showLoading = true) {
+      selectedRunId = id;
+      renderRunsList();
+      try {
+        const res = await fetch(`/api/runs/${encodeURIComponent(id)}`);
+        if (!res.ok) return;
+        selectedRunData = await res.json();
+        renderDetails();
+      } catch (err) {
+        console.error('Erro carregando detalhes:', err);
+      }
+    }
+
+    function renderDetails() {
+      document.getElementById('empty-state').style.display = 'none';
+      const view = document.getElementById('active-run-view');
+      view.style.display = 'flex';
+
+      const s = selectedRunData.state || {};
+      document.getElementById('view-idea').innerText = s.idea || '-';
+      document.getElementById('view-id').innerText = s.id || '-';
+      document.getElementById('view-llm').innerText = s.llm || '-';
+      document.getElementById('view-status').innerText = s.status || '-';
+
+      const badge = document.getElementById('view-badge');
+      badge.innerHTML = `<span class="badge badge-${s.status}">${escapeHtml(s.status)}</span>`;
+
+      // Pipeline stepper
+      const done = s.done || [];
+      const stages = ['analysis', 'architecture', 'implementation', 'quality', 'delivery'];
+      stages.forEach(stg => {
+        const el = document.getElementById(`step-${stg}`);
+        if (done.includes(stg)) {
+          el.className = 'step-node done';
+        } else if (s.status === 'running' && stages[done.length] === stg) {
+          el.className = 'step-node current';
+        } else {
+          el.className = 'step-node';
+        }
+      });
+
+      // Gate Alert
+      const alertBox = document.getElementById('gate-alert-box');
+      if (s.status === 'awaiting_approval' && s.pending_gate) {
+        alertBox.innerHTML = `
+          <div class="gate-alert">
+            <div class="gate-alert-text">
+              <h3>Gate Humano Pendente: ${escapeHtml(s.pending_gate.toUpperCase())}</h3>
+              <p>O pipeline pausou aguardando aprovação humana para continuar.</p>
+            </div>
+            <button class="btn btn-success" onclick="approveGate('${s.id}')">Aprovar e Continuar</button>
+          </div>
+        `;
+      } else {
+        alertBox.innerHTML = '';
+      }
+
+      // Logs
+      const logs = (s.log || []).map(l => `[${l.at}] ${l.msg}`).join('\n');
+      document.getElementById('log-view').innerText = logs || '(sem logs)';
+
+      // Analysis Tab
+      const a = selectedRunData.analysis;
+      if (a) {
+        document.getElementById('analysis-summary').innerText = a.summary || '';
+        const reqContainer = document.getElementById('analysis-requirements');
+        reqContainer.innerHTML = (a.requirements || []).map(r => `
+          <div class="item-card">
+            <h4>${escapeHtml(r.id)} <span class="badge" style="background:rgba(255,255,255,0.06);">${escapeHtml(r.priority || 'must')}</span></h4>
+            <p>${escapeHtml(r.text)}</p>
+          </div>
+        `).join('');
+        const accList = document.getElementById('analysis-acceptance');
+        accList.innerHTML = (a.acceptance_criteria || []).map(ac => `<li>${escapeHtml(ac)}</li>`).join('');
+        document.getElementById('analysis-json-raw').innerText = JSON.stringify(a, null, 2);
+      } else {
+        document.getElementById('analysis-summary').innerText = 'Etapa de análise ainda não concluída.';
+        document.getElementById('analysis-requirements').innerHTML = '';
+        document.getElementById('analysis-acceptance').innerHTML = '';
+        document.getElementById('analysis-json-raw').innerText = '(aguardando analysis.json)';
+      }
+
+      // Architecture Tab
+      const arch = selectedRunData.architecture;
+      if (arch) {
+        document.getElementById('arch-stack').innerText = JSON.stringify(arch.stack || {}, null, 2);
+        document.getElementById('arch-test-cmd').innerText = (arch.commands || {}).test || '-';
+        const filesTbody = document.getElementById('arch-files-table');
+        filesTbody.innerHTML = (arch.files || []).map(f => `
+          <tr>
+            <td style="font-family: monospace; color: var(--accent);">${escapeHtml(f.path)}</td>
+            <td>${escapeHtml(f.purpose)}</td>
+          </tr>
+        `).join('');
+      } else {
+        document.getElementById('arch-stack').innerText = '-';
+        document.getElementById('arch-test-cmd').innerText = '-';
+        document.getElementById('arch-files-table').innerHTML = '<tr><td colspan="2">(aguardando architecture.json)</td></tr>';
+      }
+
+      // Quality Tab
+      const q = selectedRunData.quality;
+      if (q) {
+        const tbody = document.getElementById('quality-checks-table');
+        const checks = q.final_checks || (q.rounds && q.rounds[0] ? q.rounds[0].checks : []);
+        tbody.innerHTML = (checks || []).map(c => `
+          <tr>
+            <td><strong>${escapeHtml(c.name)}</strong></td>
+            <td><span class="badge badge-${c.status === 'pass' ? 'delivered' : 'blocked'}">${escapeHtml(c.status)}</span></td>
+            <td style="font-family: monospace; font-size: 0.78rem;">${escapeHtml(c.detail || '-')}</td>
+          </tr>
+        `).join('');
+        document.getElementById('quality-json-raw').innerText = JSON.stringify(q, null, 2);
+      } else {
+        document.getElementById('quality-checks-table').innerHTML = '<tr><td colspan="3">(aguardando quality.json)</td></tr>';
+        document.getElementById('quality-json-raw').innerText = '(aguardando quality.json)';
+      }
+
+      // Files Tab
+      const files = selectedRunData.files || {};
+      const fileNames = Object.keys(files);
+      const filesList = document.getElementById('files-list');
+      if (fileNames.length > 0) {
+        filesList.innerHTML = fileNames.map(name => `
+          <button class="btn btn-ghost" style="justify-content: flex-start; font-family: monospace; font-size: 0.78rem;" onclick="viewFileContent('${escapeHtml(name)}')">
+            📄 ${escapeHtml(name)}
+          </button>
+        `).join('');
+        viewFileContent(fileNames[0]);
+      } else {
+        filesList.innerHTML = '<span style="color: var(--text-dim); font-size: 0.8rem;">Nenhum arquivo gerado ainda.</span>';
+        document.getElementById('file-viewer-title').innerText = '(nenhum arquivo)';
+        document.getElementById('file-content-viewer').innerText = '// workspace vazio';
+      }
+
+      // Delivery Report Tab
+      document.getElementById('delivery-report-view').innerText = selectedRunData.delivery_report || '(relatório de entrega ainda não disponível)';
+    }
+
+    function viewFileContent(fileName) {
+      if (!selectedRunData || !selectedRunData.files) return;
+      document.getElementById('file-viewer-title').innerText = fileName;
+      document.getElementById('file-content-viewer').innerText = selectedRunData.files[fileName] || '';
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    async function approveGate(runId) {
+      try {
+        const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/approve`, { method: 'POST' });
+        if (res.ok) {
+          loadRuns();
+        }
+      } catch (err) {
+        alert('Erro ao aprovar gate: ' + err);
+      }
+    }
+
+    function openNewModal() {
+      document.getElementById('new-run-modal').classList.add('open');
+      document.getElementById('input-idea').focus();
+    }
+    function closeNewModal() {
+      document.getElementById('new-run-modal').classList.remove('open');
+    }
+
+    async function submitNewRun(e) {
+      e.preventDefault();
+      const idea = document.getElementById('input-idea').value.trim();
+      const autoApprove = document.getElementById('select-mode').value === 'auto';
+      const noInstall = document.getElementById('select-install').value === 'no-install';
+
+      const btn = document.getElementById('btn-submit-run');
+      btn.disabled = true;
+      btn.innerText = 'Iniciando...';
+
+      try {
+        const res = await fetch('/api/runs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idea, auto_approve: autoApprove, no_install: noInstall })
+        });
+        if (res.ok) {
+          closeNewModal();
+          document.getElementById('input-idea').value = '';
+          await loadRuns();
+        } else {
+          const err = await res.json();
+          alert('Erro ao iniciar run: ' + (err.error || res.statusText));
+        }
+      } catch (err) {
+        alert('Falha na requisição: ' + err);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Iniciar Fábrica';
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Live refresh every 3 seconds
+    setInterval(loadRuns, 3000);
+    window.addEventListener('DOMContentLoaded', loadRuns);
+  </script>
+</body>
+</html>
